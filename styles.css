@@ -646,17 +646,36 @@ body::before {
 .btn-accent:hover { box-shadow: 0 8px 30px rgba(212, 175, 55, 0.4); }
 
 /* Toast */
-.toast { position: fixed; bottom: calc(var(--footer-height) + var(--safe-area-bottom) + 16px); left: 50%; transform: translateX(-50%) translateY(100px); display: flex; align-items: center; gap: 8px; padding: 12px 20px; background: var(--bg-secondary); border: 1px solid var(--glass-border); border-radius: var(--radius-full); opacity: 0; visibility: hidden; transition: all var(--duration) var(--ease-out); z-index: 1000; }
-.toast.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
-.toast-icon { font-size: 1.1rem; }
-.toast-text { font-weight: 600; color: var(--text-primary); font-size: 0.9rem; }
+.toast { position: fixed; bottom: calc(var(--footer-height) + var(--safe-area-bottom) + 20px); left: 16px; right: 16px; transform: translateY(100px); display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 20px; background: var(--bg-secondary); border: 1px solid var(--glass-border); border-radius: var(--radius-xl); opacity: 0; visibility: hidden; transition: all var(--duration) var(--ease-out); z-index: 1000; max-width: 400px; margin: 0 auto; box-shadow: var(--shadow-lg); }
+.toast.show { opacity: 1; visibility: visible; transform: translateY(0); }
+.toast-icon { font-size: 1.2rem; flex-shrink: 0; }
+.toast-text { font-weight: 600; color: var(--text-primary); font-size: 0.9rem; text-align: center; word-break: break-word; }
 
 /* Special Popup */
-.special-popup-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); z-index: 9998; }
-.special-popup-content { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--glass-bg); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); padding: 32px 40px; border-radius: var(--radius-2xl); z-index: 9999; text-align: center; border: 2px solid var(--gold); box-shadow: var(--shadow-gold); animation: scaleIn 0.4s var(--ease-bounce); }
-.special-popup-emoji { font-size: 3.5rem; margin-bottom: 14px; animation: float 2s ease-in-out infinite; }
-.special-popup-message { font-size: 1.4rem; font-weight: 700; color: var(--text-primary); margin-bottom: 20px; direction: ltr; }
-.special-popup-btn { padding: 12px 32px; background: var(--gradient-gold); border: none; border-radius: var(--radius-full); color: #1a1a2e; font-size: 1rem; font-weight: 700; font-family: inherit; cursor: pointer; }
+.special-popup-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); z-index: 9998; animation: fadeIn 0.3s ease-out; }
+.special-popup-content { 
+    position: fixed; 
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    background: var(--glass-bg); 
+    backdrop-filter: var(--glass-blur); 
+    -webkit-backdrop-filter: var(--glass-blur); 
+    padding: 28px 24px; 
+    border-radius: var(--radius-2xl); 
+    z-index: 9999; 
+    text-align: center; 
+    border: 2px solid var(--gold); 
+    box-shadow: var(--shadow-gold); 
+    animation: scaleIn 0.4s var(--ease-bounce);
+    width: calc(100% - 48px);
+    max-width: 340px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+}
+.special-popup-emoji { font-size: 3rem; margin-bottom: 12px; animation: float 2s ease-in-out infinite; }
+.special-popup-message { font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin-bottom: 18px; direction: rtl; line-height: 1.5; word-break: break-word; }
+.special-popup-btn { padding: 12px 28px; background: var(--gradient-gold); border: none; border-radius: var(--radius-full); color: #1a1a2e; font-size: 1rem; font-weight: 700; font-family: inherit; cursor: pointer; min-height: 44px; }
 
 /* Responsive - Small phones */
 @media (max-width: 360px) {
@@ -668,6 +687,21 @@ body::before {
     .footer-main { flex-direction: column; gap: 10px; text-align: center; }
     .footer-per-person { text-align: center; width: 100%; }
     .footer-actions { grid-template-columns: 1fr; }
+    .special-popup-content { padding: 20px 16px; width: calc(100% - 32px); }
+    .special-popup-emoji { font-size: 2.5rem; }
+    .special-popup-message { font-size: 1rem; }
+    .toast { bottom: calc(var(--footer-height) + var(--safe-area-bottom) + 10px); left: 10px; right: 10px; padding: 12px 16px; }
+    .toast-text { font-size: 0.85rem; }
+}
+
+/* Very small phones (iPhone SE, etc) */
+@media (max-width: 320px) {
+    html { font-size: 13px; }
+    .container { padding: 12px; }
+    .card { padding: 16px; margin-bottom: 12px; }
+    .special-popup-content { padding: 16px 12px; }
+    .special-popup-emoji { font-size: 2rem; }
+    .special-popup-message { font-size: 0.9rem; }
 }
 
 /* Medium phones */
@@ -737,14 +771,43 @@ body::before {
 
 /* Landscape phones */
 @media (max-height: 500px) and (orientation: landscape) {
-    :root { --footer-height: 140px; }
-    .onboarding { padding: 16px; }
+    :root { --footer-height: 120px; --header-height: 50px; }
+    .onboarding { padding: 12px; }
+    .onboarding-icon { font-size: 2.5rem; margin-bottom: 8px; }
+    .onboarding-title { font-size: 1.4rem; }
     .onboarding-features { gap: 6px; }
-    .onboarding-feature { padding: 10px 12px; }
+    .onboarding-feature { padding: 8px 10px; }
+    .special-popup-content { max-height: calc(100vh - 40px); padding: 16px; }
+    .special-popup-emoji { font-size: 2rem; margin-bottom: 8px; }
+    .special-popup-message { font-size: 1rem; margin-bottom: 12px; }
+    .toast { bottom: calc(var(--footer-height) + 10px); }
+    .footer { padding: 10px 16px; }
+    .footer-total-value { font-size: 1.6rem; }
 }
 
 /* Notch/Dynamic Island support */
 @supports (padding-top: env(safe-area-inset-top)) {
     .header { padding-top: env(safe-area-inset-top); }
     .footer { padding-bottom: calc(14px + env(safe-area-inset-bottom)); }
+    .toast { bottom: calc(var(--footer-height) + env(safe-area-inset-bottom) + 20px); }
+    .special-popup-content { 
+        max-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 60px); 
+    }
+}
+
+/* Fix for iOS Safari 100vh issue */
+@supports (-webkit-touch-callout: none) {
+    body {
+        min-height: -webkit-fill-available;
+    }
+    .onboarding, .skeleton {
+        min-height: -webkit-fill-available;
+    }
+}
+
+/* Android specific fixes */
+@supports not (-webkit-touch-callout: none) {
+    .special-popup-content {
+        max-height: calc(100vh - 80px);
+    }
 }
