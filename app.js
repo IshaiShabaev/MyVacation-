@@ -127,10 +127,10 @@ const DEST_MULT = { europe: 1, usa: 1.2, asia: 0.7, local: 0.8 };
 const UBER_PRICES = { europe: 15, usa: 20, asia: 8, local: 10 };
 const DEST_NAMES = { europe: 'אירופה', usa: 'ארה״ב', asia: 'אסיה', local: 'ישראל' };
 const DEST_TIPS = {
-    europe: '💡 טיסה: $400-600 | מלון 3★: $100-150/לילה',
-    usa: '💡 טיסה: $800-1200 | מלון 3★: $150-200/לילה',
-    asia: '💡 טיסה: $600-900 | מלון 3★: $50-100/לילה',
-    local: '💡 מלון 3★: ₪400-600/לילה | רכב: ₪150-250/יום'
+    europe: '\uD83D\uDCA1 טיסה: $400-600 | מלון 3★: $100-150/לילה',
+    usa: '\uD83D\uDCA1 טיסה: $800-1200 | מלון 3★: $150-200/לילה',
+    asia: '\uD83D\uDCA1 טיסה: $600-900 | מלון 3★: $50-100/לילה',
+    local: '\uD83D\uDCA1 מלון 3★: 400-600 ש"ח/לילה | רכב: 150-250 ש"ח/יום'
 };
 const BASE_MEALS = { breakfast: 15, lunch: 25, dinner: 40 };
 const BASE_ATTRS = { museum: 20, tours: 50, parks: 15 };
@@ -178,7 +178,7 @@ async function fetchExchangeRate() {
                             state.rate = rate;
                             calculate();
                             saveState();
-                            console.log('✅ Exchange rate updated: $1 = ₪' + rate.toFixed(2));
+                            console.log('[OK] Exchange rate updated: $1 = ' + rate.toFixed(2) + ' ILS');
                         }
                         return rate;
                     }
@@ -186,7 +186,7 @@ async function fetchExchangeRate() {
             } catch (e) { continue; }
         }
     } catch (e) {
-        console.log('⚠️ Could not fetch exchange rate, using default');
+        console.log('[WARN] Could not fetch exchange rate, using default');
     }
     return null;
 }
@@ -468,10 +468,10 @@ function calculate() {
         if (fill) { fill.style.width = pct + '%'; fill.classList.toggle('over', total > budget); }
         if ($('budgetUsed')) $('budgetUsed').textContent = '$' + fmt(total) + ' מתוך $' + fmt(budget);
         if (total <= budget) {
-            if ($('budgetRemaining')) $('budgetRemaining').textContent = '✅ נשארו $' + fmt(budget - total);
+            if ($('budgetRemaining')) $('budgetRemaining').textContent = '\u2705 נשארו $' + fmt(budget - total);
             footer?.classList.add('in-budget');
         } else {
-            if ($('budgetRemaining')) $('budgetRemaining').textContent = '⚠️ חריגה $' + fmt(total - budget);
+            if ($('budgetRemaining')) $('budgetRemaining').textContent = '\u26A0\uFE0F חריגה $' + fmt(total - budget);
             footer?.classList.remove('in-budget');
         }
     } else { budgetProgress?.classList.remove('show'); footer?.classList.remove('in-budget'); }
@@ -508,16 +508,35 @@ function checkAlerts() {
     const startDate = $('tripDateStart')?.value;
     if (startDate) {
         const daysUntil = Math.ceil((new Date(startDate) - new Date()) / 86400000);
-        if (daysUntil > 0 && daysUntil <= 14) items.push({ icon: '⏰', text: `נשארו ${daysUntil} ימים לטיסה!`, type: 'warning' });
-        if (daysUntil > 30 && daysUntil <= 60) items.push({ icon: '💡', text: 'עוד זמן - שווה להשוות מחירים', type: 'tip' });
+        if (daysUntil > 0 && daysUntil <= 14) items.push({ icon: '\u23F0', text: `נשארו ${daysUntil} ימים לטיסה!`, type: 'warning' });
+        if (daysUntil > 30 && daysUntil <= 60) items.push({ icon: '\uD83D\uDCA1', text: 'עוד זמן - שווה להשוות מחירים', type: 'tip' });
     }
     const budget = getVal('tripBudget');
-    if (budget > 0 && currentTotal > budget) items.push({ icon: '💰', text: `חרגת ב-$${fmt(currentTotal - budget)}!`, type: 'error' });
+    if (budget > 0 && currentTotal > budget) items.push({ icon: '\uD83D\uDCB0', text: `חרגת ב-$${fmt(currentTotal - budget)}!`, type: 'error' });
     if (items.length) { alerts.innerHTML = items.map(a => `<div class="alert-item ${a.type}"><span class="alert-icon">${a.icon}</span><span>${a.text}</span></div>`).join(''); alerts.classList.add('show'); }
     else alerts.classList.remove('show');
 }
 
-// ============ WHATSAPP - ENHANCED ============
+// ============ WHATSAPP - ENHANCED (Unicode Emojis) ============
+// Emoji constants for WhatsApp (using Unicode codes for compatibility)
+const WA_EMOJI = {
+    plane: '\u2708\uFE0F',      // ✈️
+    people: '\uD83D\uDC65',     // 👥
+    calendar: '\uD83D\uDCC5',   // 📅
+    clipboard: '\uD83D\uDCCB',  // 📋
+    hotel: '\uD83C\uDFE8',      // 🏨
+    luggage: '\uD83E\uDDF3',    // 🧳
+    food: '\uD83C\uDF7D\uFE0F', // 🍽️
+    coaster: '\uD83C\uDFA2',    // 🎢
+    car: '\uD83D\uDE97',        // 🚗
+    phone: '\uD83D\uDCF1',      // 📱
+    shopping: '\uD83D\uDECD\uFE0F', // 🛍️
+    money: '\uD83D\uDCB0',      // 💰
+    person: '\uD83D\uDC64',     // 👤
+    checkmark: '\u2705',        // ✅
+    warning: '\u26A0\uFE0F'     // ⚠️
+};
+
 function buildWhatsAppMessage() {
     const tripName = $('tripName')?.value?.trim() || 'החופשה שלנו';
     const planner = $('tripPlanner')?.value?.trim();
@@ -538,41 +557,41 @@ function buildWhatsAppMessage() {
         } else { dateStr = startF; }
     }
     
-    let msg = `✈️ *${tripName}*`;
+    let msg = `${WA_EMOJI.plane} *${tripName}*`;
     if (destName) msg += ` ל${destName}`;
     msg += '\n━━━━━━━━━━━━━━\n';
-    msg += `👥 *נוסעים:* ${t}\n`;
-    msg += `📅 *ימים:* ${d}`;
+    msg += `${WA_EMOJI.people} *נוסעים:* ${t}\n`;
+    msg += `${WA_EMOJI.calendar} *ימים:* ${d}`;
     if (dateStr) msg += ` (${dateStr})`;
-    if (planner) msg += `\n📋 *מתכנן:* ${planner}`;
+    if (planner) msg += `\n${WA_EMOJI.clipboard} *מתכנן:* ${planner}`;
     
     // Flight & Hotel
     let flightHotelSection = '';
     if (state.bookingType === 'deal') {
         const dealCost = getVal('dealCost');
-        if (dealCost > 0) flightHotelSection += `   חבילה: $${fmt(dealCost)} × ${t} = $${fmt(dealCost * t)}\n`;
+        if (dealCost > 0) flightHotelSection += `   חבילה: $${fmt(dealCost)} x ${t} = $${fmt(dealCost * t)}\n`;
     } else {
         const flightCost = getVal('flightCost');
         const hotelCost = getVal('hotelCost');
-        if (flightCost > 0) flightHotelSection += `   טיסה: $${fmt(flightCost)} × ${t} = $${fmt(flightCost * t)}\n`;
+        if (flightCost > 0) flightHotelSection += `   טיסה: $${fmt(flightCost)} x ${t} = $${fmt(flightCost * t)}\n`;
         if (hotelCost > 0) flightHotelSection += `   מלון: $${fmt(hotelCost)}\n`;
     }
     if (flightHotelSection) {
-        msg += '\n\n🏨 *טיסה ומלון:*\n' + flightHotelSection;
+        msg += `\n\n${WA_EMOJI.hotel} *טיסה ומלון:*\n` + flightHotelSection;
     }
     
     // Luggage
     const hasTrolley = isOn('checkTrolley');
     const hasLuggage = isOn('checkLuggage');
     if (hasTrolley || hasLuggage) {
-        msg += '\n🧳 *כבודה:*\n';
+        msg += `\n${WA_EMOJI.luggage} *כבודה:*\n`;
         if (hasTrolley) {
             const trolleyCost = getVal('trolleyCost');
-            msg += `   טרולי: $${trolleyCost} × ${t} × 2 = $${fmt(trolleyCost * t * 2)}\n`;
+            msg += `   טרולי: $${trolleyCost} x ${t} x 2 = $${fmt(trolleyCost * t * 2)}\n`;
         }
         if (hasLuggage) {
             const luggageCost = getVal('luggageCost');
-            msg += `   מזוודה: $${luggageCost} × ${t} × 2 = $${fmt(luggageCost * t * 2)}\n`;
+            msg += `   מזוודה: $${luggageCost} x ${t} x 2 = $${fmt(luggageCost * t * 2)}\n`;
         }
     }
     
@@ -581,15 +600,15 @@ function buildWhatsAppMessage() {
     const hasCancelIns = isOn('checkCancelIns');
     const hasHealthIns = isOn('checkHealthIns');
     if (hasTransfer || hasCancelIns || hasHealthIns) {
-        msg += '\n📋 *ביטוחים ותוספות:*\n';
+        msg += `\n${WA_EMOJI.clipboard} *ביטוחים ותוספות:*\n`;
         if (hasTransfer) msg += `   הסעה: $${fmt(getVal('transferCost'))}\n`;
         if (hasCancelIns) {
             const cancelCost = getVal('cancelInsCost');
-            msg += `   ביטוח ביטול: $${cancelCost} × ${t} = $${fmt(cancelCost * t)}\n`;
+            msg += `   ביטוח ביטול: $${cancelCost} x ${t} = $${fmt(cancelCost * t)}\n`;
         }
         if (hasHealthIns) {
             const healthCost = getVal('healthDaily');
-            msg += `   ביטוח בריאות: $${healthCost} × ${d} × ${t} = $${fmt(healthCost * d * t)}\n`;
+            msg += `   ביטוח בריאות: $${healthCost} x ${d} x ${t} = $${fmt(healthCost * d * t)}\n`;
         }
     }
     
@@ -598,12 +617,12 @@ function buildWhatsAppMessage() {
     if (selectedMeals.length > 0) {
         const mealNames = { breakfast: 'בוקר', lunch: 'צהריים', dinner: 'ערב', other: 'אחר' };
         const { food } = updateTotals();
-        msg += '\n🍽️ *אוכל ליום:*\n';
+        msg += `\n${WA_EMOJI.food} *אוכל ליום:*\n`;
         selectedMeals.forEach(([m]) => {
             const price = mealPrices[m] || 0;
             msg += `   ${mealNames[m]}: $${price}\n`;
         });
-        msg += `   *סה״כ אוכל:* $${food} × ${d} × ${t} = $${fmt(food * d * t)}\n`;
+        msg += `   *סה"כ אוכל:* $${food} x ${d} x ${t} = $${fmt(food * d * t)}\n`;
     }
     
     // Attractions
@@ -611,12 +630,12 @@ function buildWhatsAppMessage() {
     if (selectedAttrs.length > 0) {
         const attrNames = { museum: 'מוזיאון', tours: 'סיורים', parks: 'פארקים', other: 'אחר' };
         const { attr } = updateTotals();
-        msg += '\n🎢 *אטרקציות ליום:*\n';
+        msg += `\n${WA_EMOJI.coaster} *אטרקציות ליום:*\n`;
         selectedAttrs.forEach(([a]) => {
             const price = attrPrices[a] || 0;
             msg += `   ${attrNames[a]}: $${price}\n`;
         });
-        msg += `   *סה״כ אטרקציות:* $${attr} × ${d} × ${t} = $${fmt(attr * d * t)}\n`;
+        msg += `   *סה"כ אטרקציות:* $${attr} x ${d} x ${t} = $${fmt(attr * d * t)}\n`;
     }
     
     // Transport
@@ -624,18 +643,18 @@ function buildWhatsAppMessage() {
     const hasPublic = isOn('checkPublic');
     const hasUber = isOn('checkUber');
     if (hasCar || hasPublic || hasUber) {
-        msg += '\n🚗 *תחבורה:*\n';
+        msg += `\n${WA_EMOJI.car} *תחבורה:*\n`;
         if (hasCar) {
             const carCost = getVal('carDaily');
-            msg += `   רכב: $${carCost} × ${d} = $${fmt(carCost * d)}\n`;
+            msg += `   רכב: $${carCost} x ${d} = $${fmt(carCost * d)}\n`;
         }
         if (hasPublic) {
             const publicCost = getVal('publicDaily');
-            msg += `   תח״צ: $${publicCost} × ${d} × ${t} = $${fmt(publicCost * d * t)}\n`;
+            msg += `   תח"צ: $${publicCost} x ${d} x ${t} = $${fmt(publicCost * d * t)}\n`;
         }
         if (hasUber) {
             const uberCost = getVal('uberDaily');
-            msg += `   אובר: $${uberCost} × ${d} = $${fmt(uberCost * d)}\n`;
+            msg += `   אובר: $${uberCost} x ${d} = $${fmt(uberCost * d)}\n`;
         }
     }
     
@@ -643,26 +662,26 @@ function buildWhatsAppMessage() {
     const hasSim = isOn('checkSim');
     if (hasSim) {
         const simCost = getVal('simCost');
-        msg += '\n📱 *סים/אינטרנט:*\n';
-        msg += `   סים: $${simCost} × ${t} = $${fmt(simCost * t)}\n`;
+        msg += `\n${WA_EMOJI.phone} *סים/אינטרנט:*\n`;
+        msg += `   סים: $${simCost} x ${t} = $${fmt(simCost * t)}\n`;
     }
     
     // Shopping
     const hasShopping = isOn('checkShopping');
     if (hasShopping) {
-        msg += '\n🛍️ *קניות:*\n';
+        msg += `\n${WA_EMOJI.shopping} *קניות:*\n`;
         msg += `   סכום כולל: $${fmt(getVal('shoppingCost'))}\n`;
     }
     
     // Total
     msg += '\n━━━━━━━━━━━━━━\n';
-    msg += `💰 *סה״כ:* $${fmt(currentTotal)} (₪${fmt(currentTotal * r)})\n`;
-    msg += `👤 *לאדם:* $${fmt(pp)} (₪${fmt(pp * r)})\n`;
+    msg += `${WA_EMOJI.money} *סה"כ:* $${fmt(currentTotal)} (${fmt(currentTotal * r)} ש"ח)\n`;
+    msg += `${WA_EMOJI.person} *לאדם:* $${fmt(pp)} (${fmt(pp * r)} ש"ח)\n`;
     
     const budget = getVal('tripBudget');
     if (budget > 0) {
-        if (currentTotal <= budget) msg += `✅ *בתקציב!* נשארו $${fmt(budget - currentTotal)}\n`;
-        else msg += `⚠️ *חריגה:* $${fmt(currentTotal - budget)} מעל התקציב\n`;
+        if (currentTotal <= budget) msg += `${WA_EMOJI.checkmark} *בתקציב!* נשארו $${fmt(budget - currentTotal)}\n`;
+        else msg += `${WA_EMOJI.warning} *חריגה:* $${fmt(currentTotal - budget)} מעל התקציב\n`;
     }
     
     return msg;
@@ -709,7 +728,7 @@ function saveState() {
         const data = { state, mealPrices, attrPrices, inputs: {} };
         ['dealCost', 'flightCost', 'hotelCost', 'trolleyCost', 'luggageCost', 'transferCost', 'cancelInsCost', 'healthDaily', 'carDaily', 'publicDaily', 'uberDaily', 'simCost', 'shoppingCost', 'tripBudget', 'tripName', 'tripPlanner', 'tripDateStart', 'tripDateEnd', 'rateInput', 'mealOtherCost', 'attrOtherCost'].forEach(id => { if ($(id)) data.inputs[id] = $(id).value; });
         ['checkTrolley', 'checkLuggage', 'checkTransfer', 'checkCancelIns', 'checkHealthIns', 'checkCar', 'checkPublic', 'checkUber', 'checkSim', 'checkShopping'].forEach(id => { if ($(id)) data.inputs[id] = $(id).checked; });
-        sessionStorage.setItem('vacationCalc', JSON.stringify(data));
+        localStorage.setItem('vacationCalc', JSON.stringify(data));
     } catch(e) {}
 }
 
@@ -717,7 +736,7 @@ function loadState() {
     try {
         const params = new URLSearchParams(window.location.search);
         if (params.has('t')) { state.travelers = parseInt(params.get('t')) || 2; state.days = parseInt(params.get('d')) || 5; state.destination = params.get('dest') || null; return; }
-        const saved = sessionStorage.getItem('vacationCalc');
+        const saved = localStorage.getItem('vacationCalc');
         if (saved) {
             const data = JSON.parse(saved);
             Object.assign(state, data.state); Object.assign(mealPrices, data.mealPrices || {}); Object.assign(attrPrices, data.attrPrices || {});
@@ -771,4 +790,4 @@ function restoreUIState() {
     });
 }
 
-function resetAll() { if (confirm('האם לאפס את כל הנתונים?')) { sessionStorage.removeItem('vacationCalc'); location.reload(); } }
+function resetAll() { if (confirm('האם לאפס את כל הנתונים?')) { localStorage.removeItem('vacationCalc'); location.reload(); } }
