@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="theme-color" content="#0a0a0f">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <title>מחשבון חופשה AI</title>
+    <!-- 🛠️ Developed by Ishai & Claude AI | 2025 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header" role="banner">
+        <div class="header-title">
+            <span class="header-icon" aria-hidden="true">🤖</span>
+            <span class="header-text">מחשבון חופשה AI</span>
+        </div>
+        <div class="header-actions">
+            <button class="header-btn" onclick="resetAll()" title="אפס הכל" aria-label="אפס את כל הנתונים">🗑️</button>
+        </div>
+        <div class="progress-container" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText" aria-live="polite">0/5 שלבים</div>
+    </header>
+    
+    <!-- Alerts -->
+    <div class="alerts" id="alerts"></div>
+    
+    <!-- Main -->
+    <main class="container" role="main">
+        
+        <!-- Card: Trip Info -->
+        <div class="card">
+            <div class="card-title"><span class="card-icon">📝</span>פרטי הטיול</div>
+            <div class="trip-meta">
+                <div class="input-row-2">
+                    <div class="input-wrapper">
+                        <input type="text" id="tripName" placeholder=" " maxlength="50">
+                        <label>שם הטיול</label>
+                    </div>
+                    <div class="input-wrapper">
+                        <input type="text" id="tripPlanner" placeholder=" " maxlength="30">
+                        <label>המתכנן</label>
+                    </div>
+                </div>
+                <div class="budget-rate-row">
+                    <div class="input-wrapper budget-field">
+                        <input type="number" id="tripBudget" placeholder=" " min="0">
+                        <label>תקציב $</label>
+                    </div>
+                    <div class="rate-display">
+                        <span class="rate-icon">💱</span>
+                        <span class="rate-text">$1 = ₪<input type="number" id="rateInput" value="3.65" min="1" max="10" step="0.01"></span>
+                        <button type="button" class="rate-refresh" onclick="fetchExchangeRate()" title="עדכן שער מהאינטרנט">🔄</button>
+                    </div>
+                </div>
+                <div class="date-range">
+                    <div class="input-wrapper">
+                        <input type="date" id="tripDateStart">
+                        <label>תאריך יציאה</label>
+                    </div>
+                    <div class="input-wrapper">
+                        <input type="date" id="tripDateEnd">
+                        <label>תאריך חזרה</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Card: Travelers & Days -->
+        <div class="card">
+            <div class="card-title"><span class="card-icon">👥</span>נוסעים וימים</div>
+            
+            <div class="section">
+                <div class="section-label">מספר נוסעים</div>
+                <div class="btn-grid" id="travelersSelect">
+                    <button class="q-btn" data-val="1">1</button>
+                    <button class="q-btn active" data-val="2">2</button>
+                    <button class="q-btn" data-val="3">3</button>
+                    <button class="q-btn" data-val="4">4</button>
+                    <button class="q-btn" data-val="5">5</button>
+                    <button class="q-btn" data-val="other">אחר</button>
+                </div>
+                <div class="custom-input" id="travelersCustom">
+                    <input type="number" id="travelersInput" min="1" max="50" placeholder="מספר נוסעים">
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-label">מספר ימים</div>
+                <div class="btn-grid" id="daysSelect">
+                    <button class="q-btn" data-val="2">2</button>
+                    <button class="q-btn" data-val="3">3</button>
+                    <button class="q-btn" data-val="4">4</button>
+                    <button class="q-btn active" data-val="5">5</button>
+                    <button class="q-btn" data-val="7">7</button>
+                    <button class="q-btn" data-val="other">אחר</button>
+                </div>
+                <div class="custom-input" id="daysCustom">
+                    <input type="number" id="daysInput" min="1" max="90" placeholder="מספר ימים">
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-label">אזור יעד</div>
+                <div class="btn-grid btn-grid-4">
+                    <button class="dest-btn" data-dest="europe">🇪🇺 אירופה</button>
+                    <button class="dest-btn" data-dest="usa">🇺🇸 ארה״ב</button>
+                    <button class="dest-btn" data-dest="asia">🌏 אסיה</button>
+                    <button class="dest-btn" data-dest="local">🇮🇱 מקומי</button>
+                </div>
+                <div class="tip" id="destTip" style="display:none"></div>
+            </div>
+        </div>
+        
+        <!-- Card: Flights & Hotel -->
+        <div class="card">
+            <div class="card-title"><span class="card-icon">✈️</span>טיסה ומלון</div>
+            
+            <div class="section">
+                <div class="section-label">סוג הזמנה</div>
+                <div class="btn-grid btn-grid-2">
+                    <button class="q-btn active" data-booking="separate">✈️ + 🏨 בנפרד</button>
+                    <button class="q-btn" data-booking="deal">📦 חבילת דיל</button>
+                </div>
+            </div>
+            
+            <div id="separateSection" class="booking-section show">
+                <div class="field-wrapper">
+                    <input type="number" id="flightCost" placeholder=" " min="0">
+                    <label>טיסה לאדם $</label>
+                </div>
+                <div class="field-wrapper">
+                    <input type="number" id="hotelCost" placeholder=" " min="0">
+                    <label>מלון סה״כ $</label>
+                </div>
+            </div>
+            
+            <div id="dealSection" class="booking-section">
+                <div class="field-wrapper">
+                    <input type="number" id="dealCost" placeholder=" " min="0">
+                    <label>חבילה לאדם $</label>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Card: Luggage & Insurance -->
+        <div class="card">
+            <div class="card-title"><span class="card-icon">🧳</span>כבודה וביטוח</div>
+            
+            <!-- Trolley -->
+            <div class="toggle-row" id="trolleyToggle" onclick="toggleOption('trolley')">
+                <div class="toggle-info">
+                    <span class="toggle-icon">🛄</span>
+                    <div class="toggle-text">
+                        <span class="toggle-title">טרולי</span>
+                        <span class="toggle-desc">הלוך-חזור לאדם</span>
+                    </div>
+                </div>
+                <label class="switch"><input type="checkbox" id="checkTrolley" onchange="toggleOption('trolley', true)"><span class="slider"></span></label>
+            </div>
+            <div class="toggle-content" id="trolleyContent">
+                <div class="field-wrapper">
+                    <input type="number" id="trolleyCost" value="30" min="0">
+                    <label>לכיוון לאדם $</label>
+                </div>
+                <div class="company-links">
+                    <span class="company-label">📋 מחירי חברות:</span>
+                    <button type="button" class="company-btn" onclick="setPrice('trolleyCost', 30)">אל-על $30</button>
+                    <button type="button" class="company-btn" onclick="setPrice('trolleyCost', 25)">ישראייר $25</button>
+                    <button type="button" class="company-btn" onclick="setPrice('trolleyCost', 25)">ארקיע $25</button>
+                </div>
+            </div>
+            
+            <!-- Luggage -->
+            <div class="toggle-row" id="luggageToggle" onclick="toggleOption('luggage')">
+                <div class="toggle-info">
+                    <span class="toggle-icon">🧳</span>
+                    <div class="toggle-text">
+                        <span class="toggle-title">מזוודה</span>
+                        <span class="toggle-desc">הלוך-חזור לאדם</span>
+                    </div>
+                </div>
+                <label class="switch"><input type="checkbox" id="checkLuggage" onchange="toggleOption('luggage', true)"><span class="slider"></span></label>
+            </div>
+            <div class="toggle-content" id="luggageContent">
+                <div class="field-wrapper">
+                    <input type="number" id="luggageCost" value="50" min="0">
+                    <label>לכיוון לאדם $</label>
+                </div>
+                <div class="company-links">
+                    <span class="company-label">📋 מחירי חברות:</span>
+                    <button type="button" class="company-btn" onclick="setPrice('luggageCost', 50)">אל-על $50</button>
+                    <button type="button" class="company-btn" onclick="setPrice('luggageCost', 45)">ישראייר $45</button>
+                    <button type="button" class="company-btn" onclick="setPrice('luggageCost', 40)">ארקיע $40</button>
+                </div>
+            </div>
+            
+            <!-- Transfer -->
+            <div class="toggle-row" id="transferToggle" onclick="toggleOption('transfer')">
+                <div class="toggle-info">
+                    <span class="toggle-icon">🚐</span>
+                    <div class="toggle-text">
+                        <span class="toggle-title">הסעה משדה״ת</span>
+                        <span class="toggle-desc">למלון הלוך-חזור</span>
+                    </div>
+                </div>
+                <label class="switch"><input type="checkbox" id="checkTransfer" onchange="toggleOption('transfer', true)"><span class="slider"></span></label>
+            </div>
+            <div class="toggle-content" id="transferContent">
+                <div class="field-wrapper">
+                    <input type="number" id="transferCost" value="50" min="0">
+                    <label>סה״כ $</label>
+                </div>
+            </div>
+            
+            <!-- Cancel Insurance -->
+            <div class="toggle-row" id="cancelInsToggle" onclick="toggleOption('cancelIns')">
+                <div class="toggle-info">
+                    <span class="toggle-icon">❌</span>
+                    <div class="toggle-text">
+                        <span class="toggle-title">ביטוח ביטול</span>
+                        <span class="toggle-desc">עלות לאדם</span>
+                    </div>
+                </div>
+                <label class="switch"><input type="checkbox" id="checkCancelIns" onchange="toggleOption('cancelIns', true)"><span class="slider"></span></label>
+            </div>
+            <div class="toggle-content" id="cancelInsContent">
+                <div class="field-wrapper">
+                    <input type="number" id="cancelInsCost" value="19" min="0">
+                    <label>לאדם $</label>
+                </div>
+                <div class="company-links">
+                    <span class="company-label">✈️ מחירי חברות:</span>
+                    <button type="button" class="company-btn" onclick="setPrice('cancelInsCost', 19)">אל-על $19</button>
+                    <button type="button" class="company-btn" onclick="setPrice('cancelInsCost', 29)">אל-על רחוק $29</button>
+                    <button type="button" class="company-btn" onclick="setPrice('cancelInsCost', 35)">ישראייר $35</button>
+                    <button type="button" class="company-btn" onclick="setPrice('cancelInsCost', 30)">ארקיע $30</button>
+                </div>
+            </div>
+            
+            <!-- Health Insurance -->
+            <div class="toggle-row" id="healthInsToggle" onclick="toggleOption('healthIns')">
+                <div class="toggle-info">
+                    <span class="toggle-icon">🏥</span>
+                    <div class="toggle-text">
+                        <span class="toggle-title">ביטוח בריאות</span>
+                        <span class="toggle-desc">עלות ליום לאדם</span>
+                    </div>
+                </div>
+                <label class="switch"><input type="checkbox" id="checkHealthIns" onchange="toggleOption('healthIns', true)"><span class="slider"></span></label>
+            </div>
+            <div class="toggle-content" id="healthInsContent">
+                <div class="field-wrapper">
+                    <input type="number" id="healthDaily" value="3" min="0">
+                    <label>ליום לאדם $</label>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Card: Food & Attractions -->
+        <div class="card">
+            <div class="card-title"><span class="card-icon">🍽️</span>אוכל ואטרקציות</div>
+            
+            <div class="section">
+                <div class="section-label">ארוחות ליום לאדם</div>
+                <div class="meal-grid">
+                    <button class="meal-btn" data-meal="breakfast" onclick="toggleMeal('breakfast')">
+                        <span class="meal-icon">🥐</span>
+                        <span class="meal-name">בוקר</span>
+                        <span class="meal-price" id="breakfastPrice">$15</span>
+                    </button>
+                    <button class="meal-btn" data-meal="lunch" onclick="toggleMeal('lunch')">
+                        <span class="meal-icon">🥗</span>
+                        <span class="meal-name">צהריים</span>
+                        <span class="meal-price" id="lunchPrice">$25</span>
+                    </button>
+                    <button class="meal-btn" data-meal="dinner" onclick="toggleMeal('dinner')">
+                        <span class="meal-icon">🍝</span>
+                        <span class="meal-name">ערב</span>
+                        <span class="meal-price" id="dinnerPrice">$40</span>
+                    </button>
+                    <button class="meal-btn" data-meal="other" onclick="toggleMeal('other')">
+                        <span class="meal-icon">📝</span>
+                        <span class="meal-name">אחר</span>
+                    </button>
+                </div>
+                <div class="custom-input" id="mealCustom" style="display:none">
+                    <input type="number" id="mealOtherCost" placeholder="סכום ליום $" min="0">
+                </div>
+                <div class="totals-row">
+                    <span>סה״כ אוכל ליום:</span>
+                    <span class="totals-value" id="foodTotal">$0</span>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-label">אטרקציות ליום לאדם</div>
+                <div class="meal-grid">
+                    <button class="attr-btn" data-attr="museum" onclick="toggleAttr('museum')">
+                        <span class="meal-icon">🏛️</span>
+                        <span class="meal-name">מוזיאון</span>
+                        <span class="meal-price" id="museumPrice">$20</span>
+                    </button>
+                    <button class="attr-btn" data-attr="tours" onclick="toggleAttr('tours')">
+                        <span class="meal-icon">🚶</span>
+                        <span class="meal-name">סיורים</span>
+                        <span class="meal-price" id="toursPrice">$50</span>
+                    </button>
+                    <button class="attr-btn" data-attr="parks" onclick="toggleAttr('parks')">
+                        <span class="meal-icon">🎢</span>
+                        <span class="meal-name">פארקים</span>
+                        <span class="meal-price" id="parksPrice">$15</span>
+                    </button>
+                    <button class="attr-btn" data-attr="other" onclick="toggleAttr('other')">
+                        <span class="meal-icon">📝</span>
+                        <span class="meal-name">אחר</span>
+                    </button>
+                </div>
+                <div class="custom-input" id="attrCustom" style="display:none">
+                    <input type="number" id="attrOtherCost" placeholder="סכום ליום $" min="0">
+                </div>
+                <div class="totals-row">
+                    <span>סה״כ אטרקציות ליום:</span>
+                    <span class="totals-value" id="attrTotal">$0</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Card: Transport & Misc -->
+        <div class="card">
+            <div class="card-title"><span class="card-icon">🚗</span>תחבורה ושונות</div>
+            
+            <div class="toggle-row" id="carToggle" onclick="toggleOption('car')">
+                <div class="toggle-info">
+                    <span class="toggle-icon">🚗</span>
+                    <div class="toggle-text">
+                        <span class="toggle-title">השכרת רכב</span>
+                        <span class="toggle-desc">עלות יומית</span>
+                    </div>
+                </div>
+                <label class="switch"><input type="checkbox" id="checkCar" onchange="toggleOption('car', true)"><span class="slider"></span></label>
+            </div>
+            <div class="toggle-content" id="carContent">
+                <div class="field-wrapper">
+                    <input type="number" id="carDaily" value="50" min="0">
+                    <label>ליום $</label>
+                </div>
+            </div>
+            
+            <div class="toggle-row" id="publicToggle" onclick="toggleOption('public')">
+                <div class="toggle-info">
+                    <span class="toggle-icon">🚌</span>
+                    <div class="toggle-text">
+                        <span class="toggle-title">תחבורה ציבורית</span>
+                        <span class="toggle-desc">עלות יומית לאדם</span>
+                    </div>
+                </div>
+                <label class="switch"><input type="checkbox" id="checkPublic" onchange="toggleOption('public', true)"><span class="slider"></span></label>
+            </div>
+            <div class="toggle-content" id="publicContent">
+                <div class="field-wrapper">
+                    <input type="number" id="publicDaily" value="10" min="0">
+                    <label>ליום לאדם $</label>
+                </div>
+            </div>
+            
+            <div class="toggle-row" id="uberToggle" onclick="toggleOption('uber')">
+                <div class="toggle-info">
+                    <span class="toggle-icon">🚕</span>
+                    <div class="toggle-text">
+                        <span class="toggle-title">מוניות/אובר</span>
+                        <span class="toggle-desc">עלות יומית</span>
+                    </div>
+                </div>
+                <label class="switch"><input type="checkbox" id="checkUber" onchange="toggleOption('uber', true)"><span class="slider"></span></label>
+            </div>
+            <div class="toggle-content" id="uberContent">
+                <div class="field-wrapper">
+                    <input type="number" id="uberDaily" value="15" min="0">
+                    <label>ליום $</label>
+                </div>
+            </div>
+            
+            <div class="toggle-row" id="simToggle" onclick="toggleOption('sim')">
+                <div class="toggle-info">
+                    <span class="toggle-icon">📱</span>
+                    <div class="toggle-text">
+                        <span class="toggle-title">סים/אינטרנט</span>
+                        <span class="toggle-desc">עלות לאדם</span>
+                    </div>
+                </div>
+                <label class="switch"><input type="checkbox" id="checkSim" onchange="toggleOption('sim', true)"><span class="slider"></span></label>
+            </div>
+            <div class="toggle-content" id="simContent">
+                <div class="field-wrapper">
+                    <input type="number" id="simCost" value="30" min="0">
+                    <label>לאדם $</label>
+                </div>
+            </div>
+            
+            <div class="toggle-row" id="shoppingToggle" onclick="toggleOption('shopping')">
+                <div class="toggle-info">
+                    <span class="toggle-icon">🛍️</span>
+                    <div class="toggle-text">
+                        <span class="toggle-title">קניות/מזכרות</span>
+                        <span class="toggle-desc">סכום כולל</span>
+                    </div>
+                </div>
+                <label class="switch"><input type="checkbox" id="checkShopping" onchange="toggleOption('shopping', true)"><span class="slider"></span></label>
+            </div>
+            <div class="toggle-content" id="shoppingContent">
+                <div class="field-wrapper">
+                    <input type="number" id="shoppingCost" value="200" min="0">
+                    <label>סה״כ $</label>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Card: Chart -->
+        <div class="card">
+            <div class="card-title"><span class="card-icon">📊</span>התפלגות הוצאות</div>
+            
+            <div id="chartContent" class="chart-wrapper">
+                <div class="pie-container">
+                    <div class="pie-chart" id="pieChart">
+                        <div class="pie-center">
+                            <span class="pie-value" id="pieValue">$0</span>
+                            <span class="pie-label">סה״כ</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="legend" id="legend"></div>
+                <div class="breakdown" id="breakdown"></div>
+            </div>
+            
+            <div id="emptyState" class="empty-state">
+                <div class="empty-icon">📊</div>
+                <div class="empty-text">הזן פרטי טיול לראות התפלגות</div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="footer" id="mainFooter" role="contentinfo">
+        <div class="budget-progress" id="budgetProgress" role="progressbar" aria-label="התקדמות תקציב">
+            <div class="budget-bar">
+                <div class="budget-fill" id="budgetFill"></div>
+            </div>
+            <div class="budget-text">
+                <span id="budgetUsed" aria-live="polite">$0 מתוך $0</span>
+                <span id="budgetRemaining" aria-live="polite"></span>
+            </div>
+        </div>
+        
+        <div class="footer-main">
+            <div class="footer-total" aria-label="סה״כ עלות">
+                <div class="footer-label">סה״כ עלות</div>
+                <div class="footer-value" id="totalUSD" aria-live="polite">$0</div>
+                <div class="footer-ils" id="totalILS">₪0</div>
+            </div>
+            <div class="footer-pp" aria-label="עלות לאדם">
+                <div class="footer-label">לאדם</div>
+                <div class="footer-value" id="perPersonUSD" aria-live="polite">$0</div>
+                <div class="footer-ils" id="perPersonILS">₪0</div>
+            </div>
+        </div>
+        
+        <div class="footer-actions" role="group" aria-label="פעולות שיתוף">
+            <button class="btn btn-share" onclick="shareWhatsApp()" aria-label="שתף בוואטסאפ">📤 וואטסאפ</button>
+            <button class="btn btn-link" onclick="copyLink()" aria-label="העתק קישור">🔗 העתק קישור</button>
+        </div>
+        <a id="waShareBtn" style="display:none" aria-hidden="true"></a>
+    </footer>
+    
+    <script src="app.js"></script>
+</body>
+</html>
